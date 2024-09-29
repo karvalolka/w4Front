@@ -10,11 +10,13 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
+    "@nuxt/http": "^0.6.4",
     "@pinia/nuxt": "^0.5.1",
     "@popperjs/core": "^2.11.8",
+    "axios": "^1.7.7",
     "nuxt": "^3.11.2",
     "pinia": "^2.2.2",
-    "swiper": "^11.1.1",
+    "swiper": "^11.1.14",
     "vue": "^3.4.21",
     "vue-router": "^4.3.0"
   },

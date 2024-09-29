@@ -1,43 +1,36 @@
 <template>
-  <div class="box-intro">
-    <Header theme="white" :is-fixed="true" />
-
-    <div class="content-container">
-      <div class="arrow-left">
-        <button type="button">
-          <Icon name="arrow-left" />
-        </button>
-      </div>
-
-      <div class="content content-width">
-        <div class="title-1">Стройка</div>
-        <div class="title-2">В труднодоступных <br> местах</div>
-
-        <div class="d-flex align-items-center justify-content-center justify-content-lg-start gap-10 mt-48 mt-lg-0">
-          <div class="arrow-left-mobile d-flex d-lg-none">
-            <button type="button">
-              <Icon name="arrow-left" />
-            </button>
-          </div>
-
-          <NuxtLink to="/" class="btn-detail">подробнее »</NuxtLink>
-
-          <div class="arrow-right-mobile d-flex d-lg-none">
-            <button type="button">
-              <Icon name="arrow-right" />
-            </button>
+  <div v-if="slides.length">
+    <div class="swiper">
+      <div class="swiper-wrapper">
+        <div v-for="slide in slides" :key="slide.id" class="swiper-slide">
+          <div :style="{'background-image': `url(http://localhost:8000/storage/${slide.img})`}" class="box-intro">
+            <Header theme="white" :is-fixed="true"/>
+            <div class="content-container">
+              <div class="content">
+                <div class="title-1">{{ slide.title }}</div>
+                <div class="title-2">{{ slide.description }}</div>
+                <div
+                    class="d-flex align-items-center justify-content-center justify-content-lg-start gap-10 mt-48 mt-lg-0">
+                  <NuxtLink to="/" class="btn-detail">подробнее »</NuxtLink>
+                </div>
+                <AdvantagesSlider/>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-
-      <div class="arrow-right">
+      <div class="swiper-button-prev">
         <button type="button">
-          <Icon name="arrow-right" />
+          <Icon name="arrow-left"/>
+        </button>
+      </div>
+
+      <div class="swiper-button-next">
+        <button type="button">
+          <Icon name="arrow-right"/>
         </button>
       </div>
     </div>
-
-    <AdvantagesSlider />
   </div>
 
   <ServicesBlock :enabled-slider="true">
@@ -50,7 +43,7 @@
     </template>
   </ServicesBlock>
 
-  <TechnologiesSlider2 v-if="innerWidth <= 992" />
+  <TechnologiesSlider2 v-if="innerWidth <= 992"/>
 
   <div v-else class="box-technologies">
     <div class="content-width mx-auto box-title">
@@ -61,28 +54,28 @@
 
     <div class="content-width mx-auto technologies">
       <div class="col-1">
-        <TechnologyCard :technology="technologies[0]" />
+        <TechnologyCard :technology="technologies[0]"/>
 
         <div class="description">
-          <Icon name="computer" />
+          <Icon name="computer"/>
 
           <div>
             <span>В своей работе мы используем только современное оборудование. В своей работе мы используем только лучшее оборудование.  В своей работе мы используем только современное оборудование. </span>
 
-            <ButtonDetail />
+            <ButtonDetail/>
           </div>
         </div>
       </div>
 
       <div class="col-2">
-        <TechnologyCard :technology="technologies[1]" />
+        <TechnologyCard :technology="technologies[1]"/>
 
-        <TechnologyCard :technology="technologies[2]" />
+        <TechnologyCard :technology="technologies[2]"/>
       </div>
     </div>
   </div>
 
-  <ProjectsSlider />
+  <ProjectsSlider/>
 
   <div class="box-about">
     <div class="content-width mx-auto box-title">
@@ -93,25 +86,36 @@
 
     <div class="box-description">
       <div class="description">
-        <p>Небольшое описание компании в несколько строчек текста.  Описание компании в несколько строчек текста. Небольшое описание компании в несколько строчек текста. Небольшое описание компании в несколько строчек текста.</p>
+        <p>Небольшое описание компании в несколько строчек текста. Описание компании в несколько строчек текста.
+          Небольшое описание компании в несколько строчек текста. Небольшое описание компании в несколько строчек
+          текста.</p>
 
         <p>Небольшое описание компании в несколько строчек текста. Описание компании в несколько строчек текста. </p>
 
-        <p>Небольшое описание компании в несколько строчек текста. Небольшое описание компании в несколько строчек текста. О компании в несколько строчек текста. Небольшое описание компании в несколько строчек текста.</p>
+        <p>Небольшое описание компании в несколько строчек текста. Небольшое описание компании в несколько строчек
+          текста. О компании в несколько строчек текста. Небольшое описание компании в несколько строчек текста.</p>
       </div>
 
-      <ButtonDetail />
+      <ButtonDetail/>
     </div>
 
     <img src="~/assets/images/goals_1.png" class="bg" alt="">
   </div>
 </template>
 
+
 <script>
-import {defineComponent} from 'vue'
+import Swiper from 'swiper';
+import 'swiper/swiper-bundle.css';
+import axios from 'axios';
+import {defineComponent} from 'vue';
 import ButtonDetail from "~/components/buttons/button-detail/ButtonDetail.vue";
 import {TECHNOLOGIES} from "~/helpers/constants.js";
 import TechnologiesSlider2 from "~/components/technologies-slider-2/TechnologiesSlider2.vue";
+
+// Импортируйте изображения здесь
+import indexBg from '@/assets/images/index_bg.png';
+import notFoundBg from '@/assets/images/404.png';
 
 export default defineComponent({
   name: "index",
@@ -119,27 +123,108 @@ export default defineComponent({
     TechnologiesSlider2,
     ButtonDetail
   },
-  methods: {
-    updateHeader() {
-
-    }
+  data() {
+    return {
+      slides: [],
+      backgrounds: [
+        indexBg,
+        notFoundBg,
+      ],
+      currentBackground: 0,
+      lastChangeTime: 0,
+      changeInterval: 5000,
+      animationFrameId: null
+    };
   },
   computed: {
     technologies() {
-      return TECHNOLOGIES
+      return TECHNOLOGIES;
     },
     innerWidth() {
-      return useMainStore().innerWidth
+      return useMainStore().innerWidth;
+    },
+    backgroundStyle() {
+      return {
+        backgroundImage: `url(${this.backgrounds[this.currentBackground]})`,
+      };
     }
+  },
+  watch: {
+    slides(newSlides) {
+      if (newSlides.length) {
+        this.initSwiper();
+      }
+    }
+  },
+
+
+  mounted() {
+    this.initSwiper();
+    this.fetchSlides();
+    this.lastChangeTime = performance.now();
+    this.animationFrameId = requestAnimationFrame(this.startBackgroundChange);
+  },
+  methods: {
+    initSwiper() {
+      this.swiper = new Swiper('.swiper', {
+        navigation: {
+          nextEl: '.swiper-button-next',
+          prevEl: '.swiper-button-prev',
+        },
+        loop: true,
+        autoplay: {
+          delay: 5000,
+          disableOnInteraction: false,
+        },
+      });
+
+    },
+
+    async fetchSlides() {
+      try {
+        const response = await axios.get('http://localhost:8000/api/sliders');
+        this.slides = response.data;
+        this.initSwiper();
+      } catch (error) {
+        console.error('Ошибка при получении слайдов:', error);
+      }
+    },
+    changeBackground() {
+      this.currentBackground = (this.currentBackground + 1) % this.backgrounds.length;
+    },
+    startBackgroundChange(timestamp) {
+      if (timestamp - this.lastChangeTime >= this.changeInterval) {
+        this.changeBackground();
+        this.lastChangeTime = timestamp;
+      }
+      this.animationFrameId = requestAnimationFrame(this.startBackgroundChange);
+    }
+  },
+  beforeUnmount() {
+    cancelAnimationFrame(this.animationFrameId);
   }
-})
+});
 </script>
 
+
 <style scoped lang="scss">
+.swiper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.swiper-slide {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 .box-intro {
-  background-image: url(./../assets/images/index_bg.png);
-  background-repeat: no-repeat;
-  padding-bottom: 70px;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
 
   .content-container {
     display: flex;
@@ -198,6 +283,24 @@ export default defineComponent({
       }
     }
   }
+}
+
+.swiper-button-prev,
+.swiper-button-next {
+  pointer-events: auto;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  color: white; /* Или любой другой цвет */
+  z-index: 10; /* Убедитесь, что кнопки над изображениями */
+}
+
+.swiper-button-prev {
+  left: 10px; /* Расположение кнопки "Назад" */
+}
+
+.swiper-button-next {
+  right: 10px; /* Расположение кнопки "Вперед" */
 }
 
 .box-services {
